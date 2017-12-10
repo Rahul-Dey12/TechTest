@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">TechTest</string>
+    <string name="textview">Create Test</string>
+    <string name="button">Button</string>
+    <string name="name_of_the_test">Name of the Test</string>
+    <string name="add_some_description">Add Some Description</string>
+    <string name="enter_no_of_questions">Enter No of Questions</string>
+    <string name="number">Number</string>
+    <string name="tv_des">TextView</string>
+    <string name="tv_testname">TextView</string>
+    <string name="please_enter_the_key">Please Enter the Key</string>
+    <string name="key">Key</string>
+    <string name="next">Next</string>
+    <string name="check">Check</string>
+</resources>
