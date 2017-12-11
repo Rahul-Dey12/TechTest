@@ -53,4 +53,12 @@ public class KeyGenerate extends AppCompatActivity {
         TestInfo testInfo=new TestInfo(testname,mtchruid,mtchrname);
         testRef.setValue(testInfo);
     }
+
+    public void getres (View view)
+    {
+      Intent getintent=new Intent(KeyGenerate.this,GetResult.class);
+      getintent.putExtra("testname",testname);
+      startActivity(getintent);
+      finish();
+    }
 }

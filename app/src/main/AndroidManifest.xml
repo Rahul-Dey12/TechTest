@@ -24,7 +24,8 @@
         <activity android:name=".TakeTest" />
         <activity android:name=".KeyGenerate" />
         <activity android:name=".GiveTest" />
-        <activity android:name=".GvTwelcome"></activity>
+        <activity android:name=".GvTwelcome" />
+        <activity android:name=".GetResult"></activity>
     </application>
 
 </manifest>

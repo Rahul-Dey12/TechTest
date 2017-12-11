@@ -67,7 +67,7 @@ public class GiveTest extends AppCompatActivity {
                 .child(tnm);
         gprogressDialog = new ProgressDialog(GiveTest.this);
 
-        uRef = Ref.child("Results").child(gAuth.getCurrentUser().getUid());
+        uRef = Ref.child("Results").child(tnm).child(gAuth.getCurrentUser().getUid());
 
         getDatabase(i);
 
@@ -128,7 +128,8 @@ public class GiveTest extends AppCompatActivity {
                         count++;
                     }
                 }
-                uRef.child("marks").setValue(""+count);
+                Results results=new Results(gAuth.getCurrentUser().getDisplayName(),Integer.toString(count));
+                uRef.setValue(results);
                 startActivity(new Intent(GiveTest.this,Main.class));
                 finish();
             }
