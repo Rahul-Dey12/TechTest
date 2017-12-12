@@ -101,6 +101,7 @@ public class GiveTest extends AppCompatActivity {
         gRef = Ref
                 .child("Tests")
                 .child(tnm);
+
         gprogressDialog = new ProgressDialog(GiveTest.this);
 
         uRef = Ref.child("Results").child(tnm).child(gAuth.getCurrentUser().getUid());
@@ -129,6 +130,7 @@ public class GiveTest extends AppCompatActivity {
             default:
                 giveans[i-1]=0;
         }
+        setprgs();
     }
 
 
@@ -165,10 +167,10 @@ public class GiveTest extends AppCompatActivity {
     }
     public boolean getqstnans(int position) {
 
-            position=position-1;
+            position--;
             if(position<gtotal&&position>=0) {
                 AllQA qa = allQAS.get(position);
-                tvno.setText("Q no" + position);
+                tvno.setText("Q no" + (position+1));
                 gqstn.setText(qa.getQuestion());
                 gans1.setText(qa.getAn1());
                 gans2.setText(qa.getAns2());
@@ -184,15 +186,13 @@ public class GiveTest extends AppCompatActivity {
     public void nextqstn(View view)
     {
             if (i<gtotal&&getqstnans(++i)) {
-                setprgs();
-                int ans = Integer.parseInt(allQAS.get(i - 1).getRgans());
                 getgvans(i);
             }
+
     }
     public void previousqstn(View view)
     {
             if (i>1&&getqstnans(--i)) {
-                setprgs();
                 getgvans(i);
         }
       }
@@ -206,6 +206,7 @@ public class GiveTest extends AppCompatActivity {
 
     public void setAns()
     {
+        String musers=gAuth.getCurrentUser().getDisplayName();
         DatabaseReference gvansRef= uRef.child("giveans");
         int count=0;
         for(int bi=0;bi<gtotal;bi++)
@@ -213,9 +214,13 @@ public class GiveTest extends AppCompatActivity {
             int ans=Integer.parseInt(allQAS.get(bi).getRgans());
             if(ans==giveans[bi])
                 count++;
+        }
+        Results mresults=new Results(musers,""+count);
+        uRef.setValue(mresults);
+        for(int bi=0;bi<gtotal;bi++)
+        {
             gvansRef.child("question" + (bi+1)).setValue(""+giveans[bi]);
         }
-        uRef.child("marks").setValue(""+count);
     }
     private void setprgs()
     {

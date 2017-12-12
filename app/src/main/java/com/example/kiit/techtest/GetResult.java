@@ -39,7 +39,6 @@ public class GetResult extends AppCompatActivity {
 
 
                     Results mresults=mdataSnapshot.getValue(Results.class);
-                    Toast.makeText(GetResult.this,""+mresults.getName(),Toast.LENGTH_SHORT).show();
                     marrayList.add(mresults);
 
                 }

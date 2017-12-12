@@ -38,6 +38,7 @@ public class TakeTest extends AppCompatActivity{
     private String testname,testdes;
     private Button mSubmit;
     private ProgressDialog tprogressDialog;
+    private AllQA[] all;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,7 +51,8 @@ public class TakeTest extends AppCompatActivity{
         tans3 = (EditText) findViewById(R.id.ed_tans3);
         tans4 = (EditText) findViewById(R.id.ed_tans4);
         thead=(TextView)findViewById(R.id.tv_thead);
-        mSubmit=(Button)findViewById(R.id.btn_tsave);
+        mSubmit=(Button)findViewById(R.id.btn_tksubmit);
+        mSubmit.setVisibility(View.INVISIBLE);
         tprogressDialog=new ProgressDialog(TakeTest.this);
         cb1=(CheckBox)findViewById(R.id.tchk1);
         cb2=(CheckBox)findViewById(R.id.tchk2);
@@ -58,8 +60,11 @@ public class TakeTest extends AppCompatActivity{
         cb4=(CheckBox)findViewById(R.id.tchk4);
 
 
+
+
         Intent takeIntent=getIntent();
         totalqstn=takeIntent.getExtras().getInt("no");
+        all=new AllQA[totalqstn];
         testname=takeIntent.getExtras().getString("name");
         testdes=takeIntent.getExtras().getString("des");
 
@@ -285,5 +290,145 @@ public class TakeTest extends AppCompatActivity{
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    public boolean addData(int pos)
+    {
+        pos--;
+            String tkqstn = tqstn.getText().toString();
+            String tkans1 = tans1.getText().toString();
+            String tkans2 = tans2.getText().toString();
+            String tkans3 = tans3.getText().toString();
+            String tkans4 = tans4.getText().toString();
+            if(pos<totalqstn&&pos>=0&&i<=totalqstn&&!TextUtils.isEmpty(tkqstn) && !TextUtils.isEmpty(tkans1) && !TextUtils.isEmpty(tkans2)
+                    && !TextUtils.isEmpty(tkans3) && !TextUtils.isEmpty(tkans4) && rightans != 0)
+            {
+            AllQA allQA = new AllQA(tkqstn, tkans1, tkans2, tkans3, tkans4, Integer.toString(rightans));
+            all[pos] = allQA;
+            return true;
+        }
+        else {
+                rightans=0;
+
+                return false;
+        }
+    }
+    public void Check(int no)
+    {
+        switch (no)
+        {
+            case 1:
+                cb1.setChecked(true);
+                cb2.setChecked(false);
+                cb3.setChecked(false);
+                cb4.setChecked(false);
+                break;
+            case 2:
+                cb2.setChecked(true);
+                cb1.setChecked(false);
+                cb3.setChecked(false);
+                cb4.setChecked(false);
+                break;
+            case 3:
+                cb3.setChecked(true);
+                cb1.setChecked(false);
+                cb2.setChecked(false);
+                cb4.setChecked(false);
+                break;
+            case 4:
+                cb4.setChecked(true);
+                cb1.setChecked(false);
+                cb2.setChecked(false);
+                cb3.setChecked(false);
+                rightans=4;
+                break;
+            default:
+                cb4.setChecked(false);
+                cb1.setChecked(false);
+                cb2.setChecked(false);
+                cb3.setChecked(false);
+
+
+        }
+    }
+    public boolean getData(int pos)
+    {
+        pos--;
+        if(all[pos]!=null)
+        {
+            AllQA qa=all[pos];
+            clearfocus();
+            tqstn.setText(qa.getQuestion());
+            tans1.setText(qa.getAn1());
+            tans2.setText(qa.getAns2());
+            tans3.setText(qa.getAns3());
+            tans4.setText(qa.getAns4());
+            int rgans=Integer.parseInt(qa.getRgans());
+            rightans=rgans;
+            Check(rgans);
+            return true;
+        }
+        else
+        {
+            rightans=0;
+            cleartext();
+            Check(0);
+            return false;
+        }
+    }
+    public void OnNext(View view)
+    {
+        if(addData(i)) {
+            if (i < totalqstn && addData(i)) {
+                getData(++i);
+                tvtpg.setText("Q No" + i);
+            }
+        }
+        else
+            Toast.makeText(TakeTest.this, "Fields are Empty", Toast.LENGTH_SHORT).show();
+        setprgs();
+
+    }
+    public void OnPre(View view)
+    {
+        if (i>1) {
+            addData(i);
+            getData(--i);
+            tvtpg.setText("Q No"+i);
+        }
+    }
+    private void setprgs()
+    {
+        int prgrs=0;
+        for(int k=0;k<totalqstn;k++)
+        {
+            if(all[k]!=null)
+                prgrs++;
+        }
+        tprogressBar.setProgress(prgrs*(100/totalqstn));
+        if(prgrs==totalqstn)
+            mSubmit.setVisibility(View.VISIBLE);
+    }
+    public void testSubmit(View view)
+    {
+        tprogressDialog.setMessage("Uploading....");
+        tprogressDialog.show();
+        if(UploadData())
+        {
+            tprogressDialog.dismiss();
+            startActivity(new Intent(TakeTest.this,QaActivity.class));
+            finish();
+
+        }
+
+    }
+    public boolean UploadData()
+    {
+        for(int l=0;l<totalqstn;l++)
+        {
+            DatabaseReference qReference = tRef.child("question" + (l+1));
+            qReference.setValue(all[l]);
+        }
+        return true;
     }
 }
