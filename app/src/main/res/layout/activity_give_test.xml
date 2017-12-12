@@ -103,7 +103,7 @@
     <Button
         android:id="@+id/btn_gnext"
         android:layout_width="88dp"
-        android:onClick="gNext"
+        android:onClick="nextqstn"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginTop="60dp"
@@ -113,7 +113,7 @@
 
     <Button
         android:id="@+id/button5"
-        android:onClick="gPrevious"
+        android:onClick="previousqstn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
@@ -124,4 +124,18 @@
         app:layout_constraintHorizontal_bias="0.152"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tv_grdgr" />
+
+    <Button
+        android:id="@+id/btn_gvsubmit"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="8dp"
+        android:layout_marginEnd="52dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/submit"
+        android:onClick="setsubmit"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toStartOf="@+id/btn_gnext"
+        app:layout_constraintTop_toBottomOf="@+id/tv_grdgr"
+        app:layout_constraintVertical_bias="0.722" />
 </android.support.constraint.ConstraintLayout>

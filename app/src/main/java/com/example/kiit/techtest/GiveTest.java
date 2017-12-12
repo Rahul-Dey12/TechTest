@@ -20,18 +20,53 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
+import java.util.ArrayList;
+
 public class GiveTest extends AppCompatActivity {
 
     private DatabaseReference gRef, uRef, Ref;
     private ProgressDialog gprogressDialog;
-    private int grgans=0, rightans, i = 1, gtotal,k=0;
-    TextView gqstn, gtestnm,tvno;
+    private int i = 1, gtotal,k=1;
+    TextView gqstn, gtestnm, tvno;
     RadioButton gans1, gans2, gans3, gans4;
     private FirebaseAuth gAuth;
-    private int ans[];
+    private int giveans[];
     private Button Submit;
     private ProgressBar gprogressBar;
     private RadioGroup rdgr;
+    private ArrayList<AllQA> allQAS;
+    private ArrayList<String> gvansarrayList;
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+
+        gRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                gprogressDialog.setMessage("Loading..");
+                gprogressDialog.show();
+                for (DataSnapshot gdataSnapshot : dataSnapshot.getChildren()) {
+
+                    try {
+                        AllQA allQA = gdataSnapshot.getValue(AllQA.class);
+                        allQAS.add(allQA);
+                    } catch (Exception e) {
+                    }
+
+                }
+                gprogressDialog.dismiss();
+                getqstnans(i);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
     @Override
 
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,23 +74,24 @@ public class GiveTest extends AppCompatActivity {
         setContentView(R.layout.activity_give_test);
 
         gAuth = FirebaseAuth.getInstance();
-        gprogressBar=(ProgressBar)findViewById(R.id.progressBar2);
+        gprogressBar = (ProgressBar) findViewById(R.id.progressBar2);
         gqstn = (TextView) findViewById(R.id.tv_gvqstn);
-        tvno=(TextView)findViewById(R.id.tv_gqno);
+        tvno = (TextView) findViewById(R.id.tv_gqno);
         gans1 = (RadioButton) findViewById(R.id.rd_g1);
         gans2 = (RadioButton) findViewById(R.id.rd_g2);
         gans3 = (RadioButton) findViewById(R.id.rd_g3);
         gans4 = (RadioButton) findViewById(R.id.rd_g4);
-        Submit=(Button)findViewById(R.id.btn_gnext);
-        rdgr=(RadioGroup)findViewById(R.id.tv_grdgr);
-        btnsetText(i);
-        tvno.setText("Q no"+i);
+        Submit = (Button) findViewById(R.id.btn_gvsubmit);
+        Submit.setVisibility(View.INVISIBLE);
+        rdgr = (RadioGroup) findViewById(R.id.tv_grdgr);
         gtestnm = (TextView) findViewById(R.id.tv_gtestname);
+        allQAS = new ArrayList<AllQA>();
+        gvansarrayList = new ArrayList<String>();
 
         String guid = getIntent().getExtras().getString("uid");
         String tnm = getIntent().getExtras().getString("name");
         gtotal = getIntent().getExtras().getInt("no");
-        ans = new int[gtotal];
+        giveans=new int[gtotal];
         gtestnm.setText(tnm);
 
         Ref = FirebaseDatabase.getInstance().getReference()
@@ -69,189 +105,128 @@ public class GiveTest extends AppCompatActivity {
 
         uRef = Ref.child("Results").child(tnm).child(gAuth.getCurrentUser().getUid());
 
-        getDatabase(i);
-
-    }
-
-    public void getDatabase(int no) {
-        gprogressDialog.setMessage("Getting  Data...");
-        gprogressDialog.show();
-
-        DatabaseReference greference = gRef.child("question" + no);
-
-        greference.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-                try {
-                    AllQA gallQA = dataSnapshot.getValue(AllQA.class);
-                    gqstn.setText(gallQA.getQuestion());
-                    gans1.setText(gallQA.getAn1());
-                    gans2.setText(gallQA.getAns2());
-                    gans3.setText(gallQA.getAns3());
-                    gans4.setText(gallQA.getAns4());
-                    rightans = Integer.parseInt(gallQA.getRgans());
-                } catch (Exception e) {
-                }
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
-
-        gprogressDialog.dismiss();
-
-    }
-
-    public void gNext(View view) {
-
-        if (i<=gtotal) {
-
-            checkAns(i);
-            if(i>=k) {
-                gprogressBar.setProgress(i * (100 / gtotal));
-                k=i;
-            }
-            else if(k+1>=i)
-            {
-                getrdrg(i);
-            }
-            i++;
-            if(i==gtotal+1)
-            {
-                int count=0;
-                for(int j=0;j<=gtotal-1;j++)
-                {
-                    if(ans[j]==1)
-                    {
-                        count++;
-                    }
-                }
-                Results results=new Results(gAuth.getCurrentUser().getDisplayName(),Integer.toString(count));
-                uRef.setValue(results);
-                startActivity(new Intent(GiveTest.this,Main.class));
-                finish();
-            }
-            else {
-                tvno.setText("Q no"+i);
-                btnsetText(i);
-                getDatabase(i);
-
-            }
-        }
 
 
-    }
 
-    public void gPrevious(View view) {
-
-        if (i > 1) {
-
-            checkAns(i);
-
-            i--;
-            if(k>=i)
-            {
-                getrdrg(i);
-            }
-
-
-            tvno.setText("Q no"+i);
-            btnsetText(i);
-            getDatabase(i);
-
-
-        }
-    }
-
-   private void checkAns(int no) {
-        uRef.child("question" + no).setValue(""+grgans);
-        if (grgans == rightans) {
-            ans[no-1] = 1;
-        } else {
-            ans[no-1] = 0;
-        }
     }
 
     public void onRadiobtnclick(View view) {
 
         switch (view.getId()) {
             case R.id.rd_g1:
-
-                grgans = 1;
+                giveans[i-1]=1;
                 break;
             case R.id.rd_g2:
-
-                grgans = 2;
+                giveans[i-1]=2;
                 break;
             case R.id.rd_g3:
-
-                grgans = 3;
-
+                giveans[i-1]=3;
                 break;
             case R.id.rd_g4:
-
-                grgans = 4;
+                giveans[i-1]=4;
                 break;
 
             default:
-                    grgans=0;
+                giveans[i-1]=0;
         }
     }
 
-    public void btnsetText(int no)
-    {
-        if(no==gtotal) {
-            Submit.setText("Submit");
+
+
+    private boolean getgvans(int position) {
+        if(giveans[position-1]!=0)
+        {
+
+        switch (giveans[position-1]) {
+            case 1:
+                rdgr.check(R.id.rd_g1);
+                break;
+            case 2:
+                rdgr.check(R.id.rd_g2);
+                break;
+            case 3:
+                rdgr.check(R.id.rd_g3);
+
+                break;
+            case 4:
+                rdgr.check(R.id.rd_g4);
+                break;
+            default:
+                rdgr.check(-1);
+
+        }
+            return true;
         }
         else {
-            Submit.setText("next");
+            rdgr.clearCheck();
+            return false;
         }
-    }
 
-    public void getrdrg(int no)
+    }
+    public boolean getqstnans(int position) {
+
+            position=position-1;
+            if(position<gtotal&&position>=0) {
+                AllQA qa = allQAS.get(position);
+                tvno.setText("Q no" + position);
+                gqstn.setText(qa.getQuestion());
+                gans1.setText(qa.getAn1());
+                gans2.setText(qa.getAns2());
+                gans3.setText(qa.getAns3());
+                gans4.setText(qa.getAns4());
+                return true;
+            }
+        else {
+                return false;
+            }
+
+    }
+    public void nextqstn(View view)
     {
-        gprogressDialog.setMessage("Wait a Min...");
-        gprogressDialog.show();
-        DatabaseReference getRef=uRef.child("question"+no);
-
-        getRef.addListenerForSingleValueEvent(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot dataSnapshot) {
-
-                    try {
-
-                        int rgno = Integer.parseInt(dataSnapshot.getValue().toString());
-
-                        switch (rgno) {
-                            case 1:
-                                rdgr.check(R.id.rd_g1);
-                                break;
-                            case 2:
-                                rdgr.check(R.id.rd_g2);
-                                break;
-                            case 3:
-                                rdgr.check(R.id.rd_g3);
-                                break;
-                            case 4:
-                                rdgr.check(R.id.rd_g4);
-                                break;
-                            default:
-                               // Toast.makeText(GiveTest.this,"xero",Toast.LENGTH_SHORT).show();
-                                rdgr.check(-1);
-                        }
-                    } catch (Exception e) {
-                    }
-                gprogressDialog.dismiss();
-
+            if (i<gtotal&&getqstnans(++i)) {
+                setprgs();
+                int ans = Integer.parseInt(allQAS.get(i - 1).getRgans());
+                getgvans(i);
             }
+    }
+    public void previousqstn(View view)
+    {
+            if (i>1&&getqstnans(--i)) {
+                setprgs();
+                getgvans(i);
+        }
+      }
 
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-        });
+    public void setsubmit(View view)
+    {
+        setAns();
+        startActivity(new Intent(GiveTest.this,Main.class));
+        finish();
     }
 
+    public void setAns()
+    {
+        DatabaseReference gvansRef= uRef.child("giveans");
+        int count=0;
+        for(int bi=0;bi<gtotal;bi++)
+        {
+            int ans=Integer.parseInt(allQAS.get(bi).getRgans());
+            if(ans==giveans[bi])
+                count++;
+            gvansRef.child("question" + (bi+1)).setValue(""+giveans[bi]);
+        }
+        uRef.child("marks").setValue(""+count);
+    }
+    private void setprgs()
+    {
+        int prgrs=0;
+        for(int k=0;k<gtotal;k++)
+        {
+            if(giveans[k]!=0)
+                prgrs++;
+        }
+        gprogressBar.setProgress(prgrs*(100/gtotal));
+        if(prgrs==gtotal)
+            Submit.setVisibility(View.VISIBLE);
+    }
 }
